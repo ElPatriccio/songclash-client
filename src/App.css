@@ -10,3 +10,13 @@ html{
 .error{
   color:red;
 }
+
+.correctGuess{
+  font-size: 20px;
+  letter-spacing: 0.25em;
+}
+
+.hint span{
+  padding: 10px;
+}
+
