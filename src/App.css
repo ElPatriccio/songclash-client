@@ -1,12 +1,36 @@
+:root{
+  --background-color: rgb(34, 34, 34);
+  --primary-color: rgb(197, 48, 92);
+  --secondary-color: rgb(73, 73, 73);
+  --green: rgb(62, 214, 62);
+  --orange: rgb(224, 148, 49);
+}
+
 html{
   background-color:rgb(34, 34, 34);
   color: white;
-  font-family: 'Averia';
+  font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+
+*{
+  margin: 0;
+  box-sizing: border-box;
 }
 
 .title{
   text-align: center;
 }
+
+.guess-area{
+  text-align: center;
+  width: 400px;
+  height: 400px;
+  padding-top: 30px;
+  border-radius: 50%;
+  border: 10px solid black;
+  font-size: 1.25em;
+}
+
 .error{
   color:red;
 }
@@ -18,5 +42,89 @@ html{
 
 .hint span{
   padding: 10px;
+}
+
+.time{
+  font-size: 2.75em;
+}
+
+
+.grid{
+  display: grid;
+  width: 600px;
+  grid-template-columns: auto auto auto auto minmax(auto, 125px);
+}
+
+.grid-item{
+  text-align: center;
+}
+
+.red{
+  color: var(--primary-color);
+}
+
+.orange{
+  color:var(--orange);
+}
+
+.green{
+  color: var(--green);
+}
+
+.hint-area{
+  display: grid;
+  align-items: center;
+  height: 100px;
+  margin-bottom: 25px;
+  font-size: 0.75em;
+}
+
+.circle{
+  display: grid;
+  align-items: center;
+  justify-content: center;
+  margin-top: 25px;
+}
+
+.everything{
+  display: grid;
+  margin-top: 75px;
+  width: 100%;
+  grid-template-columns: auto auto;
+  column-gap: 100px;
+}
+
+.guess-input{
+  border: 0;
+  border-bottom: 2px solid var(--primary-color);
+  outline: 0;
+  background-color: transparent;
+  color:white;
+  text-align: center;
+  padding-bottom: 0.3em;
+  
+}
+
+.skip-button{
+  border: 0;
+  padding: 0.5em 1em;
+  color: white;
+  background-color: var(--secondary-color);
+  transition: 0.5s;
+}
+
+.skip-button:hover{
+  background-color: var(--primary-color);
+  transition: 0.5s;
+}
+
+.center{
+  display: grid;
+  width: 100%;
+  justify-content: center;
+}
+
+.slider{
+  width: 200px;
 }
 
