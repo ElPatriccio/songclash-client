@@ -112,6 +112,7 @@ html{
 
 .skip-button{
   border: 0;
+  cursor: pointer;
   padding: 0.5em 1em;
   color: white;
   background-color: var(--secondary-color);
