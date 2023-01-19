@@ -1,23 +1,16 @@
 import './App.css';
 import io from 'socket.io-client';
-import {useEffect, useState} from 'react';
-import audioFile from './lol.mp3';
+import {useEffect, useRef, useState} from 'react';
 import useExternalScripts from './hooks/useExternalScript';
 
-const socket = io.connect("https://autumn-left-hay-plasma.trycloudflare.com");
-
+const socket = io.connect("http://localhost:3001");
 const audio = new Audio();
-
 
 function App() {
   const [name, setName] = useState("");
   const [inRoom, setInRoom] = useState(false);
   const [guess, setGuess] = useState("");
-  const [users, setUsers] = useState("");
-  const [points, setPoints] = useState("");
-  const [interpretIcon, setInterpretIcon] = useState("");
-  const [songIcon, setSongIcon] = useState("");
-  const [milliseconds, setMilliseconds] = useState(<></>);
+  const [leaderboard, setLeaderboard] = useState("");
   const [failMsg, setFailMsg] = useState("");
   const [interpretHint, setInterpretHint] = useState("");
   const [songHint, setSongHint] = useState("");
@@ -25,6 +18,10 @@ function App() {
   const [songHintSpan, setSongHintSpan] = useState(<></>);
   const [timeRemaining, setTimeRemaining] = useState(30);
   const [timeColor, setTimeColor] = useState("green");
+  const volume = useRef(0.3);
+  const [volumeDisplay, setVolumeDisplay] = useState(0.3);
+  const [mute, setMute] = useState(false);
+  const [progressVal, setProgressVal] = useState(0);
 
   useExternalScripts("https://kit.fontawesome.com/83e4b3ca38.js");
 
@@ -33,7 +30,7 @@ function App() {
   }
 
   const sendGuess = () =>{
-    socket.emit("send_guess", {userId: name, guess, song: songHint, interpret: interpretHint})
+    socket.emit("send_guess", {guess, song: songHint, interpret: interpretHint})
     setGuess("");
   }
 
@@ -41,36 +38,27 @@ function App() {
     socket.emit("skip_song", name);
   }
 
-  const updateUsers = (serverUsers) =>{
-    if(!serverUsers) return;
+  const updateLeaderboard = (users) => {
     let key = 0;
-    setUsers(serverUsers.map((user) => <h4 key={key++}>{user}</h4>))
-  }
-
-  const updatePoints = (serverPoints) => {
-    let key = 0;
-    setPoints(serverPoints.map((point) => <h4 key={key++}>{point}</h4>))
-  }
-
-  const updateIconColors = (serverColors) =>{
-    let key = 0;
-    setInterpretIcon(serverColors.map((colors) => {
-      let classNameString = 'fa-solid fa-user ' + colors[0];
-      return <h4 key={key++}><i className={classNameString}></i></h4>
-    }));
-
-    setSongIcon(serverColors.map((colors) => {
-      let classNameString = 'fa-solid fa-music ' + colors[1];
-      return <h4 key={key++}><i className={classNameString}></i></h4>;
-    }));
-  }
-
-  const updateMilliseconds = (serverMilliseconds) => {
-    let key = 0;
-    setMilliseconds(serverMilliseconds.map((milli) => {
-      if(milli != '')return <h4 key={key++}>{milli + 'ms'}</h4>;
-      else return <h4 key={key++}>-</h4>;
-    }))
+    return users.map((user) =>
+      <> 
+        <div className='grid-item'>
+          <span>{user.name}</span>
+        </div>
+        <div className='grid-item'>
+          <span>{user.points}</span>
+        </div>
+        <div className='grid-item'>
+          <span><i className={'fa-solid fa-user ' + user.iconColor[0]}></i></span>
+        </div>
+        <div className='grid-item'>
+          <span><i className={'fa-solid fa-music ' + user.iconColor[1]}></i></span>
+        </div>
+        <div className='grid-item'>
+          <span>{user.milliseconds === 0 ? '-' : user.milliseconds + 'ms'}</span>
+        </div>
+      </>
+    )
   }
 
   const setInterpret = (array) =>{
@@ -81,6 +69,18 @@ function App() {
   const setSong = (array) =>{
     setSongHint(array);
     setSongHintSpan(mapHint(array));
+  }
+
+  const changeVolume = (e) => {
+    volume.current = ((e.target.value / 10));
+    setVolumeDisplay((e.target.value / 10))
+    audio.volume = volume.current;
+  }
+
+  const updateMute = () => {
+    setMute(!mute);
+    volume.current = !mute ? 0 : volumeDisplay;   //!mute wegen dem huan state async
+    audio.volume = volume.current;
   }
 
   const mapHint = (arr) =>{
@@ -104,32 +104,17 @@ function App() {
         setFailMsg(data.message);
         return;
       }
-
-      updateUsers(data.users);
     })
 
-    socket.on("update_leaderboard", (data) =>{
-      if(data.users) updateUsers(data.users);
-      if(data.points) updatePoints(data.points);
-      if(data.iconColors) updateIconColors(data.iconColors);
-      if(data.milliseconds) updateMilliseconds(data.milliseconds);
+    socket.on("update_leaderboard", (serverUsers) =>{
+      setLeaderboard(updateLeaderboard(serverUsers))
     })
 
     socket.on("update_interpret_hint", (interpretHintArr) =>{
-      let guessed = true;
-      for (let i = 0; i < interpretHintArr.length; i++) {
-        if(/__*/.test(interpretHintArr[i])) guessed = false; 
-      }
       setInterpret(interpretHintArr);
     })
 
     socket.on("update_song_hint", (songHintArr) => {
-      let guessed = true;
-      for (let i = 0; i < songHintArr.length; i++) {
-        if(/__*/.test(songHintArr[i])){
-          guessed = false; 
-        }
-      }
       setSong(songHintArr);
     })
 
@@ -149,15 +134,16 @@ function App() {
           setTimeColor("red");
           break;
         }
-
-      }
+        default:
+          break;
+      }    
     })
 
     socket.on("next_round", (data)=>{
       setInterpret(data.interpret);
       setSong(data.song);
-      audio.src = audioFile;
-      audio.volume = 0.3;
+      audio.src = require('./../songs/' + data.path)      
+      audio.volume = mute ? 0 : volume.current;
       audio.play();
       setTimeRemaining(30);
       
@@ -177,7 +163,7 @@ function App() {
       <>
       <div className='everything'>
         <div className='center'>
-          <input className='slider' type='range' min='0' max='10' defaultValue='3'></input>
+          <h2 className='volume-bar'>{mute ? <i onClick={() => updateMute()} className="fa-solid fa-volume-xmark volume"></i> : <i onClick={()=>updateMute()}className="fa-solid fa-volume-high volume"></i>}<input className='slider' onChange={(e) => {changeVolume(e)}} type='range' min='0' max='10' defaultValue='3'></input></h2>
           <div className='circle'>
               <div className='guess-area'>
                 <h1 className={'time ' + timeColor}>{timeRemaining}</h1>
@@ -194,21 +180,7 @@ function App() {
             </div>
           </div>
           <div className='grid'>
-            <div className='grid-item'>
-              {users}
-            </div>
-            <div className='grid-item'>
-              {points}
-            </div>
-            <div className='grid-item'>
-              {interpretIcon}
-            </div>
-            <div className='grid-item'>
-              {songIcon}
-            </div>
-            <div className='grid-item'>
-              {milliseconds}
-            </div>
+            {leaderboard}
           </div>
       </div>
         
