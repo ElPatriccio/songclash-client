@@ -21,7 +21,7 @@ function App() {
   const volume = useRef(0.3);
   const [volumeDisplay, setVolumeDisplay] = useState(0.3);
   const [mute, setMute] = useState(false);
-  const [progressVal, setProgressVal] = useState(0);
+  const [solution, setSolution] = useState({record:{ms: "", user:""}, song:"", interpret:""});
 
   useExternalScripts("https://kit.fontawesome.com/83e4b3ca38.js");
 
@@ -39,11 +39,11 @@ function App() {
   }
 
   const updateLeaderboard = (users) => {
-    let key = 0;
+    let place = 1;
     return users.map((user) =>
       <> 
         <div className='grid-item'>
-          <span>{user.name}</span>
+          <span>{place++ + ". "}</span><span>{user.name}</span>
         </div>
         <div className='grid-item'>
           <span>{user.points}</span>
@@ -140,17 +140,18 @@ function App() {
     })
 
     socket.on("next_round", (data)=>{
+      setTimeRemaining(30);
       setInterpret(data.interpret);
       setSong(data.song);
-      audio.src = require('./../songs/' + data.path)      
+      audio.src = require("../../songs/" + data.name);
       audio.volume = mute ? 0 : volume.current;
       audio.play();
-      setTimeRemaining(30);
       
     })
 
-    socket.on("stop_round", ()=>{
+    socket.on("stop_round", (display)=>{
       audio.pause();
+      setSolution(display);
     })
 
   }, [socket]) 
@@ -176,6 +177,16 @@ function App() {
                 <br/>
                 <br/>
                 <button className='skip-button' onClick={skipSong}>Next Song</button>
+              </div>
+            </div>
+            <div className='solution'>
+              <div className='row'>
+                <span>{solution.interpret}</span>
+                <span>{solution.song}</span>
+              </div>
+              <div className='row'>
+                <span>{("Record: " + solution.record.ms)}</span>
+                <span>{solution.record.user}</span>
               </div>
             </div>
           </div>

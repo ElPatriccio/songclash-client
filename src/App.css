@@ -63,6 +63,9 @@ html{
   font-size: 1.15em;
 }
 
+.grid-item span{
+  margin: 0.75em;
+}
 
 .red{
   color: var(--primary-color);
@@ -159,5 +162,24 @@ html{
 
 .volume:hover{
   opacity: .7;
+}
+
+.solution{
+  margin-top: 3em;
+  width: 100%;
+  min-height: 7em;
+  font-size: 1.25em;
+  display: grid;
+  justify-content:space-between;
+  grid-auto-flow: column;
+  padding-top: 2em;
+  padding-bottom: 2em;
+  padding-left: 1.25em;
+  padding-right: 1.25em;
+  background-color: var(--dark);
+}
+
+.solution .row{
+  display: grid;
 }
 
