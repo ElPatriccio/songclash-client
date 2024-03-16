@@ -22,6 +22,7 @@ function App() {
   const [volumeDisplay, setVolumeDisplay] = useState(0.3);
   const [mute, setMute] = useState(false);
   const [solution, setSolution] = useState({record:{ms: "", user:""}, song:"", interpret:""});
+  const [round, setRound] = useState("0");
 
   useExternalScripts("https://kit.fontawesome.com/83e4b3ca38.js");
 
@@ -143,6 +144,7 @@ function App() {
       setTimeRemaining(30);
       setInterpret(data.interpret);
       setSong(data.song);
+      setRound(data.round);
       audio.src = require("../../songs/" + data.name);
       audio.volume = mute ? 0 : volume.current;
       audio.play();
@@ -164,7 +166,9 @@ function App() {
       <>
       <div className='everything'>
         <div className='center'>
-          <h2 className='volume-bar'>{mute ? <i onClick={() => updateMute()} className="fa-solid fa-volume-xmark volume"></i> : <i onClick={()=>updateMute()}className="fa-solid fa-volume-high volume"></i>}<input className='slider' onChange={(e) => {changeVolume(e)}} type='range' min='0' max='10' defaultValue='3'></input></h2>
+          <div className='bar'>
+            <span className='volume-bar'>{mute ? <i onClick={() => updateMute()} className="fa-solid fa-volume-xmark volume"></i> : <i onClick={()=>updateMute()}className="fa-solid fa-volume-high volume"></i>}<input className='slider' onChange={(e) => {changeVolume(e)}} type='range' min='0' max='10' defaultValue='3'></input></span><span>{round}/10</span>
+          </div>
           <div className='circle'>
               <div className='guess-area'>
                 <h1 className={'time ' + timeColor}>{timeRemaining}</h1>

@@ -167,6 +167,7 @@ html{
 .solution{
   margin-top: 3em;
   width: 100%;
+  max-width: 400px;
   min-height: 7em;
   font-size: 1.25em;
   display: grid;
@@ -183,3 +184,10 @@ html{
   display: grid;
 }
 
+.bar{
+  display: grid;
+  width: 100%;
+  justify-content: space-between;
+  font-size: 1.15em;
+  grid-auto-flow: column;
+}
